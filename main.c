@@ -14,7 +14,14 @@
 #include "inc/hw_uart.h"
 
 #define ADC_SEQUENCER 1
-#define SIGNAL_SIZE 100
+#define SIGNAL_SIZE 50*4 // (Fs/f)*Nc
+
+uint32_t ui32SysClkFreq;
+uint32_t adcValue;
+uint32_t flag_transfer = 0;
+uint32_t SampleFrequency = 10000;
+uint32_t signal[SIGNAL_SIZE];
+uint32_t sampleIndex = 0;
 
 
 // Configuração da Tabela de controle do uDMA
@@ -29,12 +36,7 @@ uint8_t pui8ControlTable[1024] __attribute__ ((aligned(1024)));
 #endif
 
 
-uint32_t ui32SysClkFreq;
-uint32_t adcValue;
-uint32_t flag_transfer = 0;
-uint32_t SampleFrequency = 500;
-uint32_t signal[SIGNAL_SIZE];
-uint32_t sampleIndex = 0;
+
 
 // ---------------------------------------------
 // ADC
@@ -116,10 +118,9 @@ void ConfigureUDMA(void)
     uDMAChannelAssign(UDMA_CH9_UART0TX);
     uDMAChannelAssign(UDMA_CH8_UART0RX);
 
-    uDMAChannelAttributeDisable(UDMA_CHANNEL_UART0TX, UDMA_ATTR_ALL); //desabilita as atribuições do canal
+    uDMAChannelAttributeDisable(UDMA_CHANNEL_UART0TX, UDMA_ATTR_ALL);
     uDMAChannelControlSet(UDMA_CHANNEL_UART0TX | UDMA_PRI_SELECT, UDMA_SIZE_8 | UDMA_SRC_INC_8 | UDMA_DST_INC_NONE | UDMA_ARB_4);
 
-    // Configuração para UART RX (recepção)
     uDMAChannelAttributeDisable(UDMA_CHANNEL_UART0RX, UDMA_ATTR_ALL);
     uDMAChannelControlSet(UDMA_CHANNEL_UART0RX | UDMA_PRI_SELECT, UDMA_SIZE_8 | UDMA_SRC_INC_NONE | UDMA_DST_INC_8 | UDMA_ARB_4);
 }
